@@ -1,102 +1,124 @@
-//Inside SeleniumTest.cs
-
-using NUnit.Framework;
-
 using OpenQA.Selenium;
-
 using OpenQA.Selenium.Chrome;
-
-using OpenQA.Selenium.Firefox;
-
-using System;
-
-using System.Collections.ObjectModel;
-
-using System.IO;
+using TestProjectSelenium.Data;
+using TestProjectSelenium.Models;
 
 namespace SeleniumCsharp
-
 {
-
     public class Tests
-
     {
-
         IWebDriver driver;
+        String demoBlazeUrl = "https://demoblaze.com/";
+        By logoImageXpath = By.XPath("//nav[@id='narvbarx']//a/img");
+        By productFisrtOptionXpath = By.XPath("//a[contains(text(), 'Samsung galaxy s6')]");
+        By addToCartButtonXpath = By.XPath("//div[@id='tbodyid']//div[@class='row']//a");
+        By logInButtonXpath = By.XPath("//button[text()='Log in']");
+        By logInTitleByID = By.Id("login2");
+        By logInUserNameByID = By.Id("loginusername");
+        By logInPasswordByID = By.Id("loginpassword");
 
-        [OneTimeSetUp]
-
-        public void Setup()
-
+        [Test]
+        public void LogInInvalid()
         {
-
-            //Below code is to get the drivers folder path dynamically.
-
-            //You can also specify chromedriver.exe path dircly ex: C:/MyProject/Project/drivers
-
-            string path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName;
-
-            //Creates the ChomeDriver object, Executes tests on Google Chrome
-
-            driver = new ChromeDriver(path + @"\drivers\");
-
-            //If you want to Execute Tests on Firefox uncomment the below code
-
-            // Specify Correct location of geckodriver.exe folder path. Ex: C:/Project/drivers
-
-            //driver= new FirefoxDriver(path + @"\drivers\");
-
+            var invalidUser = UserLoginDataInstances.InvalidUser;
+            verifyLogo();
+            IWebElement logInTitle = driver.FindElement(logInTitleByID);
+            Assert.IsTrue(logInTitle.Displayed, "Verify if logIn Title was displayed.");
+            logInTitle.Click();
+            FillLogInPopUp(invalidUser);
+            IWebElement logInButton = driver.FindElement(logInButtonXpath);
+            logInButton.Click();
+            Thread.Sleep(Const.TwoSecond);
+            IAlert alertPopUp = driver.SwitchTo().Alert();
+            String alertPopUpText = alertPopUp.Text;
+            Assert.AreEqual(Const.WrongMessagePassword, alertPopUpText, 
+                $"Verify if alert pop up message is '{Const.WrongMessagePassword}' to '{alertPopUpText}'");
+            Thread.Sleep(Const.TwoSecond);
+            alertPopUp.Accept();
         }
 
         [Test]
+        public void BuyAProduct()
+        {
+            verifyLogo();
+            AddToCart();
+        }
 
         public void verifyLogo()
-
         {
-
-            driver.Navigate().GoToUrl("https://www.browserstack.com/");
-
-            Assert.IsTrue(driver.FindElement(By.Id("logo")).Displayed);
-
+            driver.Navigate().GoToUrl(demoBlazeUrl);
+            IWebElement logoImage = driver.FindElement(logoImageXpath);
+            Assert.IsTrue(logoImage.Displayed, "Logo demoblaze was displayed.");
         }
 
-        [Test]
-
-        public void verifyMenuItemcount()
-
+        public void FillLogInPopUp(UserLoginData user)
         {
-
-            ReadOnlyCollection<IWebElement> menuItem = driver.FindElements(By.XPath("//ul[contains(@class,'horizontal-list product-menu')]/li"));
-
-            Assert.AreEqual(menuItem.Count, 4);
-
+            driver.SwitchTo().ActiveElement();
+            IWebElement logInUserNameInput = driver.FindElement(logInUserNameByID);
+            Thread.Sleep(Const.TwoSecond);
+            logInUserNameInput.SendKeys(user.UserName);
+            IWebElement logInPasswordInput = driver.FindElement(logInPasswordByID);
+            logInPasswordInput.SendKeys(user.Password);
         }
 
-        [Test]
-
-        public void verifyPricingPage()
-
+        public String DinamicElement(String xpath, String value)
         {
+            return xpath.Replace("?", value);
+        }
 
-            driver.Navigate().GoToUrl("https://browserstack.com/pricing");
+  /*      public void waitElement(IWebElement element, int timeMilliseconds = Const.TwoSecond)
+        {
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromMilliseconds(timeMilliseconds));
+            wait.Until(WaitType(element.GetAttribute("xpath")));
+        }
+       private Func<IWebDriver, bool> WaitType(string xpath)
+        {
+            return (driver) =>
+            {
+                    try
+                    {
+                        return driver.FindElement(driver.FindElement(By.XPath(xpath))).Text.Equals("");
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+            };
+         }
+        */
 
-            IWebElement contactUsPageHeader = driver.FindElement(By.TagName("h1"));
-
-            Assert.IsTrue(contactUsPageHeader.Text.Contains("Replace your device lab and VMs with any of these plans"));
-
+        public void AddToCart()
+        {
+            Thread.Sleep(Const.TwoSecond);
+            IWebElement productFisrtOption = driver.FindElement(productFisrtOptionXpath);
+            Assert.IsTrue(productFisrtOption.Displayed, "Logo product Fisrt Option was displayed.");
+            productFisrtOption.Click();
+            Thread.Sleep(Const.TwoSecond);
+            IWebElement addToCartButton = driver.FindElement(addToCartButtonXpath);
+            Assert.IsTrue(addToCartButton.Displayed, "Button 'Add To Cart' was displayed.");
+            addToCartButton.Click();
+            Thread.Sleep(Const.TwoSecond);
+            IAlert alertPopUp = driver.SwitchTo().Alert();
+            String alertPopUpText = alertPopUp.Text;
+            Assert.AreEqual(Const.ProductAddedMessage, alertPopUpText,
+                $"Verify if alert pop up message is '{Const.ProductAddedMessage}' to '{alertPopUpText}'");
+            Thread.Sleep(Const.TwoSecond);
+            alertPopUp.Accept();
         }
 
 
-
+        [OneTimeSetUp]
+        public void Setup()
+        {
+            string path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName;
+            driver = new ChromeDriver(path + @"\drivers\");
+            driver.Manage().Window.Maximize();
+        }
 
         [OneTimeTearDown]
-
         public void TearDown()
-
         {
-
             driver.Quit();
-
         }
 
     }
