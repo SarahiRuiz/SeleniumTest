@@ -1,5 +1,3 @@
-using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
 using TestProjectSelenium.Data;
 using TestProjectSelenium.Models;
 using TestProjectSelenium.PageObjects;

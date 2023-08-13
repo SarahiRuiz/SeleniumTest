@@ -31,8 +31,8 @@ namespace TestProjectSelenium.PageObjects
         public void ClickRandomProduct()
         {
             Random random = new Random();
-            int totalProductsTitle = TotalElements(productsTitle);
             Thread.Sleep(Const.TwoSecond);
+            int totalProductsTitle = TotalElements(productsTitle);            
             int randomNumber = random.Next(1, totalProductsTitle);
             String productTitleRandomString = globalMethods.DynamicToElement(productOptionDynamic, $"{randomNumber}");
             IWebElement productTitleIWebEle = driver.FindElement(By.XPath(productTitleRandomString));
