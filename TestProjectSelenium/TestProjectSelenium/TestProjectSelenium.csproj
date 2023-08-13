@@ -19,8 +19,4 @@
     <PackageReference Include="Selenium.WebDriver" Version="4.10.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Driver\" />
-  </ItemGroup>
-
 </Project>
